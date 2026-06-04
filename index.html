@@ -83,11 +83,12 @@ body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;m
 .fb.fent{border-color:var(--gray);color:var(--text);}
 .cnt{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;background:var(--s2);border-radius:8px;font-size:10px;color:var(--muted);padding:0 3px;}
 .list{display:flex;flex-direction:column;gap:8px;padding:10px 20px 0;}
-.item{border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:10px;border:1px solid transparent;animation:fadein .2s ease;}
+.item{border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:8px;border:1px solid transparent;animation:fadein .2s ease;}
 @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .item.aguardando{background:var(--yellow-bg);border-color:var(--yellow-border);}
 .item.pago{background:var(--green-bg);border-color:var(--green-border);}
 .item.entregue{background:var(--gray-bg);border-color:var(--gray-border);opacity:.5;}
+.item-top{display:flex;align-items:center;gap:10px;}
 .sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .aguardando .sdot{background:var(--yellow);}
 .pago .sdot{background:var(--green);}
@@ -102,7 +103,7 @@ body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;m
 .aguardando .ival{color:var(--yellow);}
 .pago .ival{color:var(--green);}
 .entregue .ival{color:var(--muted);}
-.iact{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+.iact{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
 .ba{font-family:'Space Mono',monospace;font-size:10px;padding:5px 9px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;}
 .bm{border-color:var(--green);color:var(--green);background:transparent;}
 .bm:hover{background:var(--green);color:#111;}
@@ -111,6 +112,17 @@ body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;m
 .bd{border-color:#333;color:#444;background:transparent;padding:3px 7px;}
 .bd:hover{border-color:#ff4d4d;color:#ff4d4d;}
 .stag{font-size:10px;padding:4px 8px;border-radius:5px;border:1px solid var(--gray-border);color:var(--muted);}
+/* RETIRADA PARCIAL */
+.retir-box{background:rgba(245,197,24,0.05);border:1px solid var(--yellow-border);border-radius:8px;padding:10px 12px;display:none;gap:8px;flex-wrap:wrap;align-items:center;}
+.retir-box.show{display:flex;}
+.retir-box input{flex:1;min-width:100px;background:#111;border:1px solid var(--yellow-border);color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:7px 10px;border-radius:6px;outline:none;}
+.retir-box input::placeholder{color:var(--muted);}
+.btn-retir{background:var(--yellow);color:#111;font-family:'Bebas Neue',sans-serif;font-size:14px;padding:7px 14px;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;}
+.btn-retir:hover{opacity:.85}
+.btn-cancel{background:transparent;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;cursor:pointer;}
+.retir-lbl{font-size:10px;color:var(--yellow);width:100%;}
+/* saldo restante badge */
+.saldo-restante{font-size:11px;color:var(--green);margin-left:6px;}
 .empty{color:var(--muted);font-size:12px;padding:20px 0;text-align:center;}
 .client-banner{background:var(--s1);border-bottom:1px solid var(--border);padding:16px 20px;}
 .client-nome{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--green);letter-spacing:1px;}
@@ -200,20 +212,19 @@ body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;m
     <div class="client-sub">Seus lançamentos — somente visualização</div>
   </div>
   <div class="saldo" style="margin:12px 20px 0;">
-    <div class="si"><div class="sl">💵 A receber</div><div class="sv" id="cv-v">$ 0.00</div></div>
+    <div class="si"><div class="sl">💵 Disponível</div><div class="sv" id="cv-v">$ 0.00</div></div>
     <div class="si"><div class="sl">🟡 Aguardando</div><div class="sv y" id="cv-a">$ 0.00</div></div>
-    <div class="si"><div class="sl">📦 Recebido</div><div class="sv m" id="cv-e">$ 0.00</div></div>
+    <div class="si"><div class="sl">📦 Retirado</div><div class="sv m" id="cv-e">$ 0.00</div></div>
   </div>
   <div class="list" id="lista-cliente"></div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-const SENHA = "1234"; // ← MUDE SUA SENHA AQUI
+const SENHA = "1234";
 
 firebase.initializeApp({
   apiKey: "AIzaSyCTnUIV8KhxdtglUbFfyjb3_Su5eucyiS0",
@@ -231,16 +242,14 @@ let caixaAtual = null;
 let filtroAtual = 'all';
 let caixaListener = null;
 
-// Conexão
 db.ref('.info/connected').on('value', snap => {
   const on = snap.val();
   const d = document.getElementById('conn-dot');
   const l = document.getElementById('conn-lbl');
-  if(d) d.className = 'conn-dot' + (on ? ' on' : '');
-  if(l) l.textContent = on ? 'Online' : 'Offline';
+  if(d) d.className = 'conn-dot'+(on?' on':'');
+  if(l) l.textContent = on?'Online':'Offline';
 });
 
-// INIT
 const hash = decodeURIComponent(location.hash.replace('#','').trim());
 if(hash){
   mostrarTela('screen-cliente');
@@ -258,7 +267,7 @@ function mostrarTela(id){
 }
 
 function fazerLogin(){
-  if(document.getElementById('login-senha').value === SENHA){
+  if(document.getElementById('login-senha').value===SENHA){
     sessionStorage.setItem('caixa_adm','1');
     mostrarTela('screen-dash');
     carregarDash();
@@ -266,49 +275,60 @@ function fazerLogin(){
     document.getElementById('login-err').style.display='block';
   }
 }
-
-function fazerLogout(){
-  sessionStorage.removeItem('caixa_adm');
-  mostrarTela('screen-login');
-}
-
+function fazerLogout(){ sessionStorage.removeItem('caixa_adm'); mostrarTela('screen-login'); }
 function irDash(){
   if(caixaListener){ caixaListener.off(); caixaListener=null; }
-  caixaAtual = null;
+  caixaAtual=null;
   mostrarTela('screen-dash');
 }
 
-// DASHBOARD
 function carregarDash(){
   db.ref('caixas').on('value', snap => {
-    todasCaixas = snap.val() || {};
+    todasCaixas = snap.val()||{};
     renderDash();
   });
 }
 
 function renderDash(){
   let tv=0,ta=0,te=0;
-  Object.values(todasCaixas).forEach(c => {
-    Object.values(c.pagamentos||{}).forEach(p => {
-      if(p.status==='pago') tv+=p.valor;
+  Object.values(todasCaixas).forEach(c=>{
+    Object.values(c.pagamentos||{}).forEach(p=>{
+      const saldo = calcSaldoRestante(p);
+      if(p.status==='pago') tv+=saldo;
       else if(p.status==='aguardando') ta+=p.valor;
       else if(p.status==='entregue') te+=p.valor;
+      // retiradas parciais contam como entregue
+      Object.values(p.retiradas||{}).forEach(r=>{ tv-=0; te+=r.valor; });
+    });
+  });
+  // recalc correto
+  tv=0; ta=0; te=0;
+  Object.values(todasCaixas).forEach(c=>{
+    Object.values(c.pagamentos||{}).forEach(p=>{
+      const ret = Object.values(p.retiradas||{}).reduce((s,r)=>s+r.valor,0);
+      if(p.status==='aguardando') ta+=p.valor;
+      else if(p.status==='pago') tv+=(p.valor-ret);
+      else if(p.status==='entregue') te+=p.valor;
+      te+=ret;
     });
   });
   document.getElementById('dt-v').textContent=fmtVal(tv);
   document.getElementById('dt-a').textContent=fmtVal(ta);
   document.getElementById('dt-e').textContent=fmtVal(te);
 
-  const ids = Object.keys(todasCaixas);
-  const grid = document.getElementById('cards-grid');
+  const ids=Object.keys(todasCaixas);
+  const grid=document.getElementById('cards-grid');
   if(!ids.length){ grid.innerHTML='<div class="empty">Nenhuma caixa criada.</div>'; return; }
-
-  grid.innerHTML = ids.map(id => {
-    const c = todasCaixas[id];
-    const pags = Object.values(c.pagamentos||{});
-    const verde = pags.filter(p=>p.status==='pago').reduce((s,p)=>s+p.valor,0);
-    const amarelo = pags.filter(p=>p.status==='aguardando').reduce((s,p)=>s+p.valor,0);
-    const link = location.origin+location.pathname+'#'+encodeURIComponent(c.nome);
+  grid.innerHTML=ids.map(id=>{
+    const c=todasCaixas[id];
+    const pags=Object.values(c.pagamentos||{});
+    let verde=0,amarelo=0;
+    pags.forEach(p=>{
+      const ret=Object.values(p.retiradas||{}).reduce((s,r)=>s+r.valor,0);
+      if(p.status==='pago') verde+=(p.valor-ret);
+      else if(p.status==='aguardando') amarelo+=p.valor;
+    });
+    const link=location.origin+location.pathname+'#'+encodeURIComponent(c.nome);
     return `<div class="card" onclick="abrirCaixa('${id}')">
       <div>
         <div class="card-nome">${c.nome}</div>
@@ -327,40 +347,45 @@ function renderDash(){
 }
 
 function criarCaixa(){
-  const nome = document.getElementById('nova-nome').value.trim();
-  if(!nome){ alert('Informe o nome.'); return; }
-  db.ref('caixas').push({nome, criadoEm: Date.now()});
+  const nome=document.getElementById('nova-nome').value.trim();
+  if(!nome){alert('Informe o nome.');return;}
+  db.ref('caixas').push({nome,criadoEm:Date.now()});
   document.getElementById('nova-nome').value='';
   toast('Caixa criada!');
 }
-
-function deletarCaixa(id, nome){
-  if(confirm('Deletar caixa de '+nome+'? Todos os dados serão perdidos.'))
-    db.ref('caixas/'+id).remove();
+function deletarCaixa(id,nome){
+  if(confirm('Deletar caixa de '+nome+'?')) db.ref('caixas/'+id).remove();
 }
-
-function copiarLink(link, nome){
+function copiarLink(link,nome){
   navigator.clipboard.writeText(link).then(()=>toast('Link de '+nome+' copiado!'));
 }
 
-// CAIXA INDIVIDUAL
 function abrirCaixa(id){
-  caixaAtual = id;
-  filtroAtual = 'all';
+  caixaAtual=id; filtroAtual='all';
   document.querySelectorAll('.fb').forEach(b=>b.className='fb');
   document.querySelector('.fb').className='fb fa';
-  document.getElementById('caixa-titulo').textContent = (todasCaixas[id]?.nome||'').toUpperCase();
+  document.getElementById('caixa-titulo').textContent=(todasCaixas[id]?.nome||'').toUpperCase();
   mostrarTela('screen-caixa');
-  if(caixaListener){ caixaListener.off(); }
-  caixaListener = db.ref('caixas/'+id+'/pagamentos');
-  caixaListener.on('value', snap => renderCaixa(snap.val()||{}));
+  if(caixaListener) caixaListener.off();
+  caixaListener=db.ref('caixas/'+id+'/pagamentos');
+  caixaListener.on('value',snap=>renderCaixa(snap.val()||{}));
+}
+
+function calcSaldoRestante(p){
+  const ret=Object.values(p.retiradas||{}).reduce((s,r)=>s+r.valor,0);
+  return Math.max(0, p.valor-ret);
 }
 
 function renderCaixa(pags){
-  const arr = Object.entries(pags).map(([id,p])=>({...p,id})).sort((a,b)=>b.ts-a.ts);
-  const v=arr.filter(p=>p.status==='pago').reduce((s,p)=>s+p.valor,0);
-  const a=arr.filter(p=>p.status==='aguardando').reduce((s,p)=>s+p.valor,0);
-  const e=arr.filter(p=>p.status==='entregue').reduce((s,p)=>s+p.valor,0);
+  const arr=Object.entries(pags).map(([id,p])=>({...p,id})).sort((a,b)=>b.ts-a.ts);
+  let v=0,a=0,e=0;
+  arr.forEach(p=>{
+    const ret=Object.values(p.retiradas||{}).reduce((s,r)=>s+r.valor,0);
+    if(p.status==='pago') v+=(p.valor-ret);
+    else if(p.status==='aguardando') a+=p.valor;
+    else if(p.status==='entregue') e+=p.valor;
+    e+=ret;
+  });
   document.getElementById('sv-v').textContent=fmtVal(v);
   document.getElementById('sv-a').textContent=fmtVal(a);
   document.getElementById('sv-e').textContent=fmtVal(e);
@@ -368,75 +393,138 @@ function renderCaixa(pags){
   document.getElementById('cnt-ag').textContent=arr.filter(p=>p.status==='aguardando').length;
   document.getElementById('cnt-pg').textContent=arr.filter(p=>p.status==='pago').length;
   document.getElementById('cnt-en').textContent=arr.filter(p=>p.status==='entregue').length;
-  const itens = filtroAtual==='all'?arr:arr.filter(p=>p.status===filtroAtual);
-  const lista = document.getElementById('lista-pags');
-  if(!itens.length){ lista.innerHTML='<div class="empty">Nenhum lançamento aqui.</div>'; return; }
-  lista.innerHTML = itens.map(p=>itemHTML(p,caixaAtual,true)).join('');
+
+  const itens=filtroAtual==='all'?arr:arr.filter(p=>p.status===filtroAtual);
+  const lista=document.getElementById('lista-pags');
+  if(!itens.length){lista.innerHTML='<div class="empty">Nenhum lançamento aqui.</div>';return;}
+  lista.innerHTML=itens.map(p=>itemHTML(p,caixaAtual,true)).join('');
 }
 
-function setFiltro(f, btn){
+function setFiltro(f,btn){
   filtroAtual=f;
   document.querySelectorAll('.fb').forEach(b=>b.className='fb');
-  const cls = f==='all'?'fb fa':f==='aguardando'?'fb fag':f==='pago'?'fb fpg':'fb fent';
-  btn.className=cls;
+  btn.className=f==='all'?'fb fa':f==='aguardando'?'fb fag':f==='pago'?'fb fpg':'fb fent';
   if(caixaAtual) db.ref('caixas/'+caixaAtual+'/pagamentos').once('value',snap=>renderCaixa(snap.val()||{}));
 }
 
 function adicionarPag(){
-  if(!caixaAtual) return;
-  const desc = document.getElementById('add-desc').value.trim();
-  const val = parseFloat(document.getElementById('add-val').value);
-  if(!val||val<=0){ alert('Informe um valor válido.'); return; }
-  const nome = todasCaixas[caixaAtual]?.nome||'';
-  db.ref('caixas/'+caixaAtual+'/pagamentos').push({nome:desc||nome, valor:val, status:'aguardando', ts:Date.now()});
+  if(!caixaAtual)return;
+  const desc=document.getElementById('add-desc').value.trim();
+  const val=parseFloat(document.getElementById('add-val').value);
+  if(!val||val<=0){alert('Informe um valor válido.');return;}
+  const nome=todasCaixas[caixaAtual]?.nome||'';
+  db.ref('caixas/'+caixaAtual+'/pagamentos').push({nome:desc||nome,valor:val,status:'aguardando',ts:Date.now()});
   document.getElementById('add-desc').value='';
   document.getElementById('add-val').value='';
 }
 
 function marcarPago(cid,pid){ db.ref('caixas/'+cid+'/pagamentos/'+pid).update({status:'pago',ts_pago:Date.now()}); }
 function marcarEntregue(cid,pid){ db.ref('caixas/'+cid+'/pagamentos/'+pid).update({status:'entregue',ts_entregue:Date.now()}); }
-function deletarPag(cid,pid){ if(confirm('Remover lançamento?')) db.ref('caixas/'+cid+'/pagamentos/'+pid).remove(); }
+function deletarPag(cid,pid){ if(confirm('Remover?')) db.ref('caixas/'+cid+'/pagamentos/'+pid).remove(); }
 
-// CLIENTE
+function toggleRetirada(pid){
+  const box=document.getElementById('retir-'+pid);
+  if(box) box.classList.toggle('show');
+}
+
+function confirmarRetirada(cid,pid,saldoAtual){
+  const inp=document.getElementById('rinp-'+pid);
+  const val=parseFloat(inp.value);
+  if(!val||val<=0){alert('Informe um valor válido.');return;}
+  if(val>saldoAtual){alert('Valor maior que o saldo disponível de '+fmtVal(saldoAtual));return;}
+  db.ref('caixas/'+cid+'/pagamentos/'+pid+'/retiradas').push({valor:val,ts:Date.now()});
+  // Se saldo zerar, marca como entregue
+  if(val>=saldoAtual){
+    db.ref('caixas/'+cid+'/pagamentos/'+pid).update({status:'entregue',ts_entregue:Date.now()});
+  }
+  inp.value='';
+  document.getElementById('retir-'+pid).classList.remove('show');
+  toast('Retirada de '+fmtVal(val)+' registrada!');
+}
+
 function carregarCliente(nomeCliente){
-  document.getElementById('client-titulo').textContent = nomeCliente.toUpperCase();
-  db.ref('caixas').on('value', snap => {
-    const todas = snap.val()||{};
-    const entry = Object.entries(todas).find(([,c])=>c.nome.toLowerCase()===nomeCliente.toLowerCase());
-    if(!entry){ document.getElementById('lista-cliente').innerHTML='<div class="empty">Caixa não encontrada.</div>'; return; }
-    const pags = Object.entries(entry[1].pagamentos||{}).map(([id,p])=>({...p,id})).sort((a,b)=>b.ts-a.ts);
-    document.getElementById('cv-v').textContent=fmtVal(pags.filter(p=>p.status==='pago').reduce((s,p)=>s+p.valor,0));
-    document.getElementById('cv-a').textContent=fmtVal(pags.filter(p=>p.status==='aguardando').reduce((s,p)=>s+p.valor,0));
-    document.getElementById('cv-e').textContent=fmtVal(pags.filter(p=>p.status==='entregue').reduce((s,p)=>s+p.valor,0));
-    const lista = document.getElementById('lista-cliente');
-    if(!pags.length){ lista.innerHTML='<div class="empty">Nenhum lançamento ainda.</div>'; return; }
-    lista.innerHTML = pags.map(p=>itemHTML(p,null,false)).join('');
+  document.getElementById('client-titulo').textContent=nomeCliente.toUpperCase();
+  db.ref('caixas').on('value',snap=>{
+    const todas=snap.val()||{};
+    const entry=Object.entries(todas).find(([,c])=>c.nome.toLowerCase()===nomeCliente.toLowerCase());
+    if(!entry){document.getElementById('lista-cliente').innerHTML='<div class="empty">Caixa não encontrada.</div>';return;}
+    const pags=Object.entries(entry[1].pagamentos||{}).map(([id,p])=>({...p,id})).sort((a,b)=>b.ts-a.ts);
+    let v=0,a=0,e=0;
+    pags.forEach(p=>{
+      const ret=Object.values(p.retiradas||{}).reduce((s,r)=>s+r.valor,0);
+      if(p.status==='pago') v+=(p.valor-ret);
+      else if(p.status==='aguardando') a+=p.valor;
+      else if(p.status==='entregue') e+=p.valor;
+      e+=ret;
+    });
+    document.getElementById('cv-v').textContent=fmtVal(v);
+    document.getElementById('cv-a').textContent=fmtVal(a);
+    document.getElementById('cv-e').textContent=fmtVal(e);
+    const lista=document.getElementById('lista-cliente');
+    if(!pags.length){lista.innerHTML='<div class="empty">Nenhum lançamento ainda.</div>';return;}
+    lista.innerHTML=pags.map(p=>itemHTML(p,null,false)).join('');
   });
 }
 
-// HELPERS
 function itemHTML(p,cid,isAdm){
   const isAg=p.status==='aguardando',isPg=p.status==='pago';
+  const retiradas=Object.values(p.retiradas||{});
+  const totalRet=retiradas.reduce((s,r)=>s+r.valor,0);
+  const saldoRest=Math.max(0,p.valor-totalRet);
+
   const ts=[
     '📅 '+fmtTs(p.ts),
     p.ts_pago?'🟢 Pago: '+fmtTs(p.ts_pago):'',
     p.ts_entregue?'📦 Entregue: '+fmtTs(p.ts_entregue):'',
+    retiradas.length?retiradas.map(r=>'💸 Retirada '+fmtVal(r.valor)+': '+fmtTs(r.ts)).join('<br>'):'',
   ].filter(Boolean).map(t=>'<div>'+t+'</div>').join('');
+
+  // valor exibido: se tem retiradas, mostra saldo restante
+  const valorExib = isPg && retiradas.length
+    ? `<div style="text-align:right"><div style="font-size:11px;color:var(--muted);text-decoration:line-through;">${fmtVal(p.valor)}</div><div class="ival">${fmtVal(saldoRest)}</div></div>`
+    : `<div class="ival">${fmtVal(p.valor)}</div>`;
+
   let act='';
   if(isAdm){
-    act=isAg?`<button class="ba bm" onclick="marcarPago('${cid}','${p.id}')">✓ Marcar pago</button><button class="ba bd" onclick="deletarPag('${cid}','${p.id}')">✕</button>`
-      :isPg?`<button class="ba be" onclick="marcarEntregue('${cid}','${p.id}')">📦 Entregar</button><button class="ba bd" onclick="deletarPag('${cid}','${p.id}')">✕</button>`
-      :`<span class="stag">📦 entregue</span><button class="ba bd" onclick="deletarPag('${cid}','${p.id}')">✕</button>`;
+    if(isAg){
+      act=`<button class="ba bm" onclick="marcarPago('${cid}','${p.id}')">✓ Marcar pago</button>
+           <button class="ba bd" onclick="deletarPag('${cid}','${p.id}')">✕</button>`;
+    } else if(isPg){
+      act=`<button class="ba" style="border-color:var(--yellow);color:var(--yellow);background:transparent;" onclick="toggleRetirada('${p.id}')">💸 Retirada</button>
+           <button class="ba be" onclick="marcarEntregue('${cid}','${p.id}')">📦 Entregar tudo</button>
+           <button class="ba bd" onclick="deletarPag('${cid}','${p.id}')">✕</button>`;
+    } else {
+      act=`<span class="stag">📦 entregue</span>
+           <button class="ba bd" onclick="deletarPag('${cid}','${p.id}')">✕</button>`;
+    }
   } else {
     const lbs={aguardando:'🟡 Aguardando',pago:'🟢 Pago',entregue:'📦 Entregue'};
     act=`<span class="stag">${lbs[p.status]||p.status}</span>`;
+    if(isPg && saldoRest<p.valor) act+=` <span class="stag" style="border-color:var(--yellow);color:var(--yellow);">Restante: ${fmtVal(saldoRest)}</span>`;
   }
-  return `<div class="item ${p.status}"><div class="sdot"></div><div class="iinfo"><div class="inome">${p.nome}</div><div class="its">${ts}</div></div><div class="ival">${fmtVal(p.valor)}</div><div class="iact">${act}</div></div>`;
+
+  const retirBox = isAdm && isPg ? `
+    <div class="retir-box" id="retir-${p.id}">
+      <div class="retir-lbl">💸 Quanto ele quer retirar agora? Saldo disponível: ${fmtVal(saldoRest)}</div>
+      <input id="rinp-${p.id}" type="number" min="0.01" step="0.01" placeholder="Valor da retirada" onkeydown="if(event.key==='Enter')confirmarRetirada('${cid}','${p.id}',${saldoRest})" />
+      <button class="btn-retir" onclick="confirmarRetirada('${cid}','${p.id}',${saldoRest})">CONFIRMAR</button>
+      <button class="btn-cancel" onclick="toggleRetirada('${p.id}')">cancelar</button>
+    </div>` : '';
+
+  return `<div class="item ${p.status}">
+    <div class="item-top">
+      <div class="sdot"></div>
+      <div class="iinfo"><div class="inome">${p.nome}</div><div class="its">${ts}</div></div>
+      ${valorExib}
+    </div>
+    <div class="iact">${act}</div>
+    ${retirBox}
+  </div>`;
 }
 
-function fmtVal(v){ return '$ '+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function fmtTs(ts){ if(!ts) return ''; const d=new Date(ts); return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+function fmtVal(v){return '$ '+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtTs(ts){if(!ts)return '';const d=new Date(ts);return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 </script>
 </body>
 </html>
