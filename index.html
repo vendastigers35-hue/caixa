@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caixa</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#111214;--s1:#1a1c1f;--s2:#222428;--border:#2e3035;--text:#e8e9eb;--muted:#5a5d66;
+  --yellow:#f5c518;--yellow-bg:rgba(245,197,24,0.08);--yellow-border:rgba(245,197,24,0.25);
+  --green:#3ddc84;--green-bg:rgba(61,220,132,0.08);--green-border:rgba(61,220,132,0.25);
+  --gray:#5a5d66;--gray-bg:rgba(90,93,102,0.08);--gray-border:#2a2c30;--radius:12px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;min-height:100vh;padding:0 0 80px;font-size:13px;}
+.screen{display:none;}.screen.active{display:block;}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.login-box{background:var(--s1);border:1px solid var(--green-border);border-radius:var(--radius);padding:32px 28px;width:100%;max-width:340px;}
+.login-title{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--green);letter-spacing:2px;margin-bottom:4px;}
+.login-sub{font-size:11px;color:var(--muted);margin-bottom:24px;}
+.inp-full{width:100%;background:#111;border:1px solid var(--border);color:var(--text);font-family:'Space Mono',monospace;font-size:14px;padding:12px 14px;border-radius:8px;outline:none;margin-bottom:12px;transition:border-color .2s;}
+.inp-full:focus{border-color:var(--green)}
+.inp-full::placeholder{color:var(--muted)}
+.btn-full{width:100%;background:var(--green);color:#111;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;padding:12px;border:none;border-radius:8px;cursor:pointer;}
+.btn-full:hover{opacity:.85}
+.err{font-size:11px;color:#ff4d4d;margin-top:8px;display:none;}
+.header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.brand{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--green);cursor:pointer;}
+.brand span{color:var(--muted)}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:#ff4d4d;display:inline-block;margin-right:5px;transition:background .3s;}
+.conn-dot.on{background:var(--green);}
+.clabel{font-size:11px;color:var(--muted);}
+.btn-sm{font-family:'Space Mono',monospace;font-size:11px;padding:5px 11px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);}
+.btn-sm:hover{color:var(--text);border-color:var(--text);}
+.pad{padding:16px 20px 0;}
+.dash-title{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--muted);letter-spacing:1px;margin-bottom:14px;}
+.totais{background:var(--s1);border:1px solid var(--green-border);border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;display:flex;gap:20px;flex-wrap:wrap;}
+.ti{flex:1;min-width:90px;}
+.tl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.tv{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--green);}
+.tv.y{color:var(--yellow)}.tv.m{color:var(--muted);font-size:20px;}
+.new-box{background:var(--s1);border:1px dashed var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;gap:8px;margin-bottom:16px;}
+.inp-new{flex:1;background:#111;border:1px solid var(--border);color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:9px 12px;border-radius:7px;outline:none;}
+.inp-new:focus{border-color:var(--green)}
+.inp-new::placeholder{color:var(--muted)}
+.btn-g{background:var(--green);color:#111;font-family:'Bebas Neue',sans-serif;font-size:15px;padding:0 16px;border:none;border-radius:7px;cursor:pointer;white-space:nowrap;}
+.btn-g:hover{opacity:.85}
+.btn-y{background:var(--yellow);color:#111;font-family:'Bebas Neue',sans-serif;font-size:15px;padding:0 16px;border:none;border-radius:7px;cursor:pointer;white-space:nowrap;}
+.btn-y:hover{opacity:.85}
+.cards{display:flex;flex-direction:column;gap:10px;}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;transition:border-color .2s;}
+.card:hover{border-color:var(--green);}
+.card-nome{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.5px;}
+.card-stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:3px;}
+.cs{font-size:11px;color:var(--muted);}
+.cs span{color:var(--green);font-weight:700;}
+.cs.y span{color:var(--yellow);}
+.card-btns{display:flex;gap:6px;flex-shrink:0;}
+.btn-link{font-family:'Space Mono',monospace;font-size:10px;padding:5px 9px;border-radius:6px;border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;}
+.btn-link:hover{border-color:var(--green);color:var(--green);}
+.btn-xc{font-family:'Space Mono',monospace;font-size:10px;padding:5px 7px;border-radius:6px;border:1px solid #333;color:#444;background:transparent;cursor:pointer;}
+.btn-xc:hover{border-color:#ff4d4d;color:#ff4d4d;}
+.back-btn{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;border:1px solid var(--border);border-radius:6px;padding:5px 10px;background:transparent;}
+.back-btn:hover{color:var(--text);border-color:var(--text);}
+.caixa-title{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--green);letter-spacing:1px;}
+.saldo{margin:10px 20px 0;background:var(--s1);border:1px solid var(--green-border);border-radius:var(--radius);padding:14px 18px;display:flex;gap:20px;flex-wrap:wrap;}
+.si{flex:1;min-width:90px;}
+.sl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.sv{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--green);}
+.sv.y{color:var(--yellow)}.sv.m{color:var(--muted);font-size:20px;}
+.add-box{margin:10px 20px 0;background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;}
+.add-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;}
+.add-row{display:flex;gap:8px;flex-wrap:wrap;}
+.add-inp{flex:1;min-width:110px;background:#111;border:1px solid var(--border);color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:9px 12px;border-radius:7px;outline:none;}
+.add-inp:focus{border-color:var(--yellow);}
+.add-inp::placeholder{color:var(--muted);}
+.filters{display:flex;gap:7px;padding:10px 20px 0;flex-wrap:wrap;}
+.fb{font-family:'Space Mono',monospace;font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px;}
+.fb.fa{border-color:var(--text);color:var(--text);}
+.fb.fag{border-color:var(--yellow);color:var(--yellow);background:var(--yellow-bg);}
+.fb.fpg{border-color:var(--green);color:var(--green);background:var(--green-bg);}
+.fb.fent{border-color:var(--gray);color:var(--text);}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;background:var(--s2);border-radius:8px;font-size:10px;color:var(--muted);padding:0 3px;}
+.list{display:flex;flex-direction:column;gap:8px;padding:10px 20px 0;}
+.item{border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:8px;border:1px solid transparent;animation:fadein .2s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.item.aguardando{background:var(--yellow-bg);border-color:var(--yellow-border);}
+.item.pago{background:var(--green-bg);border-color:var(--green-border);}
+.item.entregue{background:var(--gray-bg);border-color:var(--gray-border);opacity:.5;}
+.item-top{display:flex;align-items:center;gap:10px;}
+.sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.aguardando .sdot{background:var(--yellow);}
+.pago .sdot{background:var(--green);}
+.entregue .sdot{background:var(--gray);}
+.iinfo{flex:1;min-width:0;}
+.inome{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.5px;line-height:1;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.aguardando .inome{color:var(--yellow);}
+.pago .inome{color:var(--green);}
+.entregue .inome{color:var(--muted);}
+.its{font-size:10px;color:var(--muted);line-height:1.7;}
+.ival{font-family:'Bebas Neue',sans-serif;font-size:20px;white-space:nowrap;}
+.aguardando .ival{color:var(--yellow);}
+.pago .ival{color:var(--green);}
+.entregue .ival{color:var(--muted);}
+.iact{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.ba{font-family:'Space Mono',monospace;font-size:10px;padding:5px 9px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;}
+.bm{border-color:var(--green);color:var(--green);background:transparent;}
+.bm:hover{background:var(--green);color:#111;}
+.be{border-color:var(--muted);color:var(--muted);background:transparent;}
+.be:hover{background:var(--muted);color:#111;}
+.bd{border-color:#333;color:#444;background:transparent;padding:3px 7px;}
+.bd:hover{border-color:#ff4d4d;color:#ff4d4d;}
+.stag{font-size:10px;padding:4px 8px;border-radius:5px;border:1px solid var(--gray-border);color:var(--muted);}
+/* RETIRADA PARCIAL */
+.retir-box{background:rgba(245,197,24,0.05);border:1px solid var(--yellow-border);border-radius:8px;padding:10px 12px;display:none;gap:8px;flex-wrap:wrap;align-items:center;}
+.retir-box.show{display:flex;}
+.retir-box input{flex:1;min-width:100px;background:#111;border:1px solid var(--yellow-border);color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:7px 10px;border-radius:6px;outline:none;}
+.retir-box input::placeholder{color:var(--muted);}
+.btn-retir{background:var(--yellow);color:#111;font-family:'Bebas Neue',sans-serif;font-size:14px;padding:7px 14px;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;}
+.btn-retir:hover{opacity:.85}
+.btn-cancel{background:transparent;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;cursor:pointer;}
+.retir-lbl{font-size:10px;color:var(--yellow);width:100%;}
+/* saldo restante badge */
+.saldo-restante{font-size:11px;color:var(--green);margin-left:6px;}
+.empty{color:var(--muted);font-size:12px;padding:20px 0;text-align:center;}
+.client-banner{background:var(--s1);border-bottom:1px solid var(--border);padding:16px 20px;}
+.client-nome{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--green);letter-spacing:1px;}
+.client-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#111;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;padding:10px 24px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="screen active" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-title">CAIXA $/</div>
+      <div class="login-sub">Acesso do administrador</div>
+      <input type="password" id="login-senha" class="inp-full" placeholder="Senha" onkeydown="if(event.key==='Enter')fazerLogin()" />
+      <button class="btn-full" onclick="fazerLogin()">ENTRAR</button>
+      <div class="err" id="login-err">Senha incorreta</div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="screen" id="screen-dash">
+  <div class="header">
+    <div class="brand" onclick="irDash()">CAIXA <span>$/</span></div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="conn-dot" id="conn-dot"></span><span class="clabel" id="conn-lbl">...</span>
+      <button class="btn-sm" onclick="fazerLogout()">Sair</button>
+    </div>
+  </div>
+  <div class="pad">
+    <div class="dash-title">SUAS CAIXAS</div>
+    <div class="totais">
+      <div class="ti"><div class="tl">💵 Total em caixa</div><div class="tv" id="dt-v">$ 0.00</div></div>
+      <div class="ti"><div class="tl">🟡 Aguardando</div><div class="tv y" id="dt-a">$ 0.00</div></div>
+      <div class="ti"><div class="tl">📦 Entregue</div><div class="tv m" id="dt-e">$ 0.00</div></div>
+    </div>
+    <div class="new-box">
+      <input class="inp-new" id="nova-nome" placeholder="Nome do cliente (ex: Beto)" onkeydown="if(event.key==='Enter')criarCaixa()" />
+      <button class="btn-g" onclick="criarCaixa()">+ CRIAR</button>
+    </div>
+    <div class="cards" id="cards-grid"></div>
+  </div>
+</div>
+
+<!-- CAIXA INDIVIDUAL -->
+<div class="screen" id="screen-caixa">
+  <div class="header">
+    <div class="brand" onclick="irDash()">CAIXA <span>$/</span></div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="conn-dot on" style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;"></span>
+      <span class="clabel">Online</span>
+    </div>
+  </div>
+  <div style="padding:14px 20px 0;display:flex;align-items:center;gap:10px;">
+    <button class="back-btn" onclick="irDash()">← Voltar</button>
+    <div class="caixa-title" id="caixa-titulo"></div>
+  </div>
+  <div class="saldo">
+    <div class="si"><div class="sl">💵 Em caixa</div><div class="sv" id="sv-v">$ 0.00</div></div>
+    <div class="si"><div class="sl">🟡 Aguardando</div><div class="sv y" id="sv-a">$ 0.00</div></div>
+    <div class="si"><div class="sl">📦 Entregue</div><div class="sv m" id="sv-e">$ 0.00</div></div>
+  </div>
+  <div class="add-box">
+    <div class="add-lbl">✋ Novo lançamento</div>
+    <div class="add-row">
+      <input class="add-inp" id="add-desc" placeholder="Descrição (opcional)" />
+      <input class="add-inp" id="add-val" type="number" min="0.01" step="0.01" placeholder="Valor $" onkeydown="if(event.key==='Enter')adicionarPag()" />
+      <button class="btn-y" onclick="adicionarPag()">+ ADD</button>
+    </div>
+  </div>
+  <div class="filters">
+    <button class="fb fa" onclick="setFiltro('all',this)">Todos <span class="cnt" id="cnt-a">0</span></button>
+    <button class="fb" onclick="setFiltro('aguardando',this)">🟡 Aguardando <span class="cnt" id="cnt-ag">0</span></button>
+    <button class="fb" onclick="setFiltro('pago',this)">🟢 Pago <span class="cnt" id="cnt-pg">0</span></button>
+    <button class="fb" onclick="setFiltro('entregue',this)">⚪ Entregue <span class="cnt" id="cnt-en">0</span></button>
+  </div>
+  <div class="list" id="lista-pags"></div>
+</div>
+
+<!-- CLIENTE VIEW -->
+<div class="screen" id="screen-cliente">
+  <div class="client-banner">
+    <div class="client-nome" id="client-titulo"></div>
+    <div class="client-sub">Seus lançamentos — somente visualização</div>
+  </div>
+  <div class="saldo" style="margin:12px 20px 0;">
+    <div class="si"><div class="sl">💵 Disponível</div><div class="sv" id="cv-v">$ 0.00</div></div>
+    <div class="si"><div class="sl">🟡 Aguardando</div><div class="sv y" id="cv-a">$ 0.00</div></div>
+    <div class="si"><div class="sl">📦 Retirado</div><div class="sv m" id="cv-e">$ 0.00</div></div>
+  </div>
+  <div class="list" id="lista-cliente"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+const SENHA = "1234";
+
+firebase.initializeApp({
+  apiKey: "AIzaSyCTnUIV8KhxdtglUbFfyjb3_Su5eucyiS0",
+  authDomain: "caixa-31dc9.firebaseapp.com",
+  databaseURL: "https://caixa-31dc9-default-rtdb.firebaseio.com",
+  projectId: "caixa-31dc9",
+  storageBucket: "caixa-31dc9.firebasestorage.app",
+  messagingSenderId: "147689496775",
+  appId: "1:147689496775:web:66292cec986945d0bedee2"
+});
+const db = firebase.database();
+
+let todasCaixas = {};
+let caixaAtual = null;
+let filtroAtual = 'all';
+let caixaListener = null;
+
+db.ref('.info/connected').on('value', snap => {
+  const on = snap.val();
+  const d = document.getElementById('conn-dot');
+  const l = document.getElementById('conn-lbl');
+  if(d) d.className = 'conn-dot'+(on?' on':'');
+  if(l) l.textContent = on?'Online':'Offline';
+});
+
+const hash = decodeURIComponent(location.hash.replace('#','').trim());
+if(hash){
+  mostrarTela('screen-cliente');
+  carregarCliente(hash);
+} else if(sessionStorage.getItem('caixa_adm')==='1'){
+  mostrarTela('screen-dash');
+  carregarDash();
+} else {
+  mostrarTela('screen-login');
+}
+
+function mostrarTela(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function fazerLogin(){
+  if(document.getElementById('login-senha').value===SENHA){
+    sessionStorage.setItem('caixa_adm','1');
+    mostrarTela('screen-dash');
+    carregarDash();
+  } else {
+    document.getElementById('login-err').style.display='block';
+  }
+}
+function fazerLogout(){ sessionStorage.removeItem('caixa_adm'); mostrarTela('screen-login'); }
+function irDash(){
+  if(caixaListener){ caixaListener.off(); caixaListener=null; }
+  caixaAtual=null;
+  mostrarTela('screen-dash');
+}
+
+function carregarDash(){
+  db.ref('caixas').on('value', snap => {
+    todasCaixas = snap.val()||{};
+    renderDash();
+  });
+}
+
+function renderDash(){
+  let tv=0,ta=0,te=0;
+  Object.values(todasCaixas).forEach(c=>{
+    Object.values(c.pagamentos||{}).forEach(p=>{
+      const saldo = calcSaldoRestante(p);
+      if(p.status==='pago') tv+=saldo;
+      else if(p.status==='aguardando') ta+=p.valor;
+      else if(p.status==='entregue') te+=p.valor;
+      // retiradas parciais contam como entregue
+      Object.values(p.retiradas||{}).forEach(r=>{ tv-=0; te+=r.valor; });
+    });
+  });
+  // recalc correto
+  tv=0; ta=0; te=0;
+  Object.values(todasCaixas).forEach(c=>{
+    Object.values(c.pagamentos||{}).forEach(p=>{
+      const ret = Object.values(p.retiradas||{}).reduce((s,r)=>s+r.valor,0);
+      if(p.status==='aguardando') ta+=p.valor;
+      else if(p.status==='pago') tv+=(p.valor-ret);
+      else if(p.status==='entregue') te+=p.valor;
+      te+=ret;
+    });
+  });
+  document.getElementById('dt-v').textContent=fmtVal(tv);
+  document.getElementById('dt-a').textContent=fmtVal(ta);
+  document.getElementById('dt-e').textContent=fmtVal(te);
+
+  const ids=Object.keys(todasCaixas);
+  const grid=document.getElementById('cards-grid');
+  if(!ids.length){ grid.innerHTML='<div class="empty">Nenhuma caixa criada.</div>'; return; }
+  grid.innerHTML=ids.map(id=>{
+    const c=todasCaixas[id];
+    const pags=Object.values(c.pagamentos||{});
+    let verde=0,amarelo=0;
+    pags.forEach(p=>{
+      const ret=Object.values(p.retiradas||{}).reduce((s,r)=>s+r.valor,0);
+      if(p.status==='pago') verde+=(p.valor-ret);
+      else if(p.status==='aguardando') amarelo+=p.valor;
+    });
+    const link=location.origin+location.pathname+'#'+encodeURIComponent(c.nome);
+    return `<div class="card" onclick="abrirCaixa('${id}')">
+      <div>
+        <div class="card-nome">${c.nome}</div>
+        <div class="card-stats">
+          <div class="cs">💵 <span>${fmtVal(verde)}</span></div>
+          <div class="cs y">🟡 <span>${fmtVal(amarelo)}</span></div>
+          <div class="cs">${pags.length} lançamento(s)</div>
+        </div>
+      </div>
+      <div class="card-btns" onclick="event.stopPropagation()">
+        <button class="btn-link" onclick="copiarLink('${link}','${c.nome}')">🔗 Link</button>
+        <button class="btn-xc" onclick="deletarCaixa('${id}','${c.nome}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function criarCaixa(){
+  const nome=document.getElementById('nova-nome').value.trim();
+  if(!nome){alert('Informe o nome.');return;}
+  db.ref('caixas').push({nome,criadoEm:Date.now()});
+  document.getElementById('nova-nome').value='';
+  toast('Caixa criada!');
+}
+function deletarCaixa(id,nome){
+  if(confirm('Deletar caixa de '+nome+'?')) db.ref('caixas/'+id).remove();
+}
+function copiarLink(link,nome){
+  navigator.clipboard.writeText(link).then(()=>toast('Link de '+nome+' copiado!'));
+}
+
+function abrirCaixa(id){
+  caixaAtual=id; filtroAtual='all';
+  document.querySelectorAll('.fb').forEach(b=>b.className='fb');
+  document.querySelector('.fb').className='fb fa';
+  document.getElementById('caixa-titulo').textContent=(todasCaixas[id]?.nome||'').toUpperCase();
+  mostrarTela('screen-caixa');
+  if(caixaListener) caixaListener.off();
+  caixaListener=db.ref('caixas/'+id+'/pagamentos');
+  caixaListener.on('value',snap=>renderCaixa(snap.val()||{}));
+}
+
+function calcSaldoRestante(p){
+  const ret=Object.values(p.retiradas||{}).reduce((s,r)=>s+r.valor,0);
+  return Math.max(0, p.valor-ret);
+}
+
+function renderCaixa(pags){
+  const arr=Object.entries(pags).map(([id,p])=>({...p,id})).sort((a,b)=>b.ts-a.ts);
+  let v=0,a=0,e=0;
+  arr.forEach(p=>{
+    const ret=Object.values(p.retiradas||{}).reduce((s,r)=>s+r.valor,0);
+    if(p.status==='pago') v+=(p.valor-ret);
+    else if(p.status==='aguardando') a+=p.valor;
+    else if(p.status==='entregue') e+=p.valor;
+    e+=ret;
+  });
+  document.getElementById('sv-v').textContent=fmtVal(v);
+  document.getElementById('sv-a').textContent=fmtVal(a);
+  document.getElementById('sv-e').textContent=fmtVal(e);
+  document.getElementById('cnt-a').textContent=arr.length;
+  document.getElementById('cnt-ag').textContent=arr.filter(p=>p.status==='aguardando').length;
+  document.getElementById('cnt-pg').textContent=arr.filter(p=>p.status==='pago').length;
+  document.getElementById('cnt-en').textContent=arr.filter(p=>p.status==='entregue').length;
+
+  const itens=filtroAtual==='all'?arr:arr.filter(p=>p.status===filtroAtual);
+  const lista=document.getElementById('lista-pags');
+  if(!itens.length){lista.innerHTML='<div class="empty">Nenhum lançamento aqui.</div>';return;}
+  lista.innerHTML=itens.map(p=>itemHTML(p,caixaAtual,true)).join('');
+}
+
+function setFiltro(f,btn){
+  filtroAtual=f;
+  document.querySelectorAll('.fb').forEach(b=>b.className='fb');
+  btn.className=f==='all'?'fb fa':f==='aguardando'?'fb fag':f==='pago'?'fb fpg':'fb fent';
+  if(caixaAtual) db.ref('caixas/'+caixaAtual+'/pagamentos').once('value',snap=>renderCaixa(snap.val()||{}));
+}
+
+function adicionarPag(){
+  if(!caixaAtual)return;
+  const desc=document.getElementById('add-desc').value.trim();
+  const val=parseFloat(document.getElementById('add-val').value);
+  if(!val||val<=0){alert('Informe um valor válido.');return;}
+  const nome=todasCaixas[caixaAtual]?.nome||'';
+  db.ref('caixas/'+caixaAtual+'/pagamentos').push({nome:desc||nome,valor:val,status:'aguardando',ts:Date.now()});
+  document.getElementById('add-desc').value='';
+  document.getElementById('add-val').value='';
+}
+
+function marcarPago(cid,pid){ db.ref('caixas/'+cid+'/pagamentos/'+pid).update({status:'pago',ts_pago:Date.now()}); }
+function marcarEntregue(cid,pid){ db.ref('caixas/'+cid+'/pagamentos/'+pid).update({status:'entregue',ts_entregue:Date.now()}); }
+function deletarPag(cid,pid){ if(confirm('Remover?')) db.ref('caixas/'+cid+'/pagamentos/'+pid).remove(); }
+
+function toggleRetirada(pid){
+  const box=document.getElementById('retir-'+pid);
+  if(box) box.classList.toggle('show');
+}
+
+function confirmarRetirada(cid,pid,saldoAtual){
+  const inp=document.getElementById('rinp-'+pid);
+  const val=parseFloat(inp.value);
+  if(!val||val<=0){alert('Informe um valor válido.');return;}
+  if(val>saldoAtual){alert('Valor maior que o saldo disponível de '+fmtVal(saldoAtual));return;}
+  db.ref('caixas/'+cid+'/pagamentos/'+pid+'/retiradas').push({valor:val,ts:Date.now()});
+  // Se saldo zerar, marca como entregue
+  if(val>=saldoAtual){
+    db.ref('caixas/'+cid+'/pagamentos/'+pid).update({status:'entregue',ts_entregue:Date.now()});
+  }
+  inp.value='';
+  document.getElementById('retir-'+pid).classList.remove('show');
+  toast('Retirada de '+fmtVal(val)+' registrada!');
+}
+
+function carregarCliente(nomeCliente){
+  document.getElementById('client-titulo').textContent=nomeCliente.toUpperCase();
+  db.ref('caixas').on('value',snap=>{
+    const todas=snap.val()||{};
+    const entry=Object.entries(todas).find(([,c])=>c.nome.toLowerCase()===nomeCliente.toLowerCase());
+    if(!entry){document.getElementById('lista-cliente').innerHTML='<div class="empty">Caixa não encontrada.</div>';return;}
+    const pags=Object.entries(entry[1].pagamentos||{}).map(([id,p])=>({...p,id})).sort((a,b)=>b.ts-a.ts);
+    let v=0,a=0,e=0;
+    pags.forEach(p=>{
+      const ret=Object.values(p.retiradas||{}).reduce((s,r)=>s+r.valor,0);
+      if(p.status==='pago') v+=(p.valor-ret);
+      else if(p.status==='aguardando') a+=p.valor;
+      else if(p.status==='entregue') e+=p.valor;
+      e+=ret;
+    });
+    document.getElementById('cv-v').textContent=fmtVal(v);
+    document.getElementById('cv-a').textContent=fmtVal(a);
+    document.getElementById('cv-e').textContent=fmtVal(e);
+    const lista=document.getElementById('lista-cliente');
+    if(!pags.length){lista.innerHTML='<div class="empty">Nenhum lançamento ainda.</div>';return;}
+    lista.innerHTML=pags.map(p=>itemHTML(p,null,false)).join('');
+  });
+}
+
+function itemHTML(p,cid,isAdm){
+  const isAg=p.status==='aguardando',isPg=p.status==='pago';
+  const retiradas=Object.values(p.retiradas||{});
+  const totalRet=retiradas.reduce((s,r)=>s+r.valor,0);
+  const saldoRest=Math.max(0,p.valor-totalRet);
+
+  const ts=[
+    '📅 '+fmtTs(p.ts),
+    p.ts_pago?'🟢 Pago: '+fmtTs(p.ts_pago):'',
+    p.ts_entregue?'📦 Entregue: '+fmtTs(p.ts_entregue):'',
+    retiradas.length?retiradas.map(r=>'💸 Retirada '+fmtVal(r.valor)+': '+fmtTs(r.ts)).join('<br>'):'',
+  ].filter(Boolean).map(t=>'<div>'+t+'</div>').join('');
+
+  // valor exibido: se tem retiradas, mostra saldo restante
+  const valorExib = isPg && retiradas.length
+    ? `<div style="text-align:right"><div style="font-size:11px;color:var(--muted);text-decoration:line-through;">${fmtVal(p.valor)}</div><div class="ival">${fmtVal(saldoRest)}</div></div>`
+    : `<div class="ival">${fmtVal(p.valor)}</div>`;
+
+  let act='';
+  if(isAdm){
+    if(isAg){
+      act=`<button class="ba bm" onclick="marcarPago('${cid}','${p.id}')">✓ Marcar pago</button>
+           <button class="ba bd" onclick="deletarPag('${cid}','${p.id}')">✕</button>`;
+    } else if(isPg){
+      act=`<button class="ba" style="border-color:var(--yellow);color:var(--yellow);background:transparent;" onclick="toggleRetirada('${p.id}')">💸 Retirada</button>
+           <button class="ba be" onclick="marcarEntregue('${cid}','${p.id}')">📦 Entregar tudo</button>
+           <button class="ba bd" onclick="deletarPag('${cid}','${p.id}')">✕</button>`;
+    } else {
+      act=`<span class="stag">📦 entregue</span>
+           <button class="ba bd" onclick="deletarPag('${cid}','${p.id}')">✕</button>`;
+    }
+  } else {
+    const lbs={aguardando:'🟡 Aguardando',pago:'🟢 Pago',entregue:'📦 Entregue'};
+    act=`<span class="stag">${lbs[p.status]||p.status}</span>`;
+    if(isPg && saldoRest<p.valor) act+=` <span class="stag" style="border-color:var(--yellow);color:var(--yellow);">Restante: ${fmtVal(saldoRest)}</span>`;
+  }
+
+  const retirBox = isAdm && isPg ? `
+    <div class="retir-box" id="retir-${p.id}">
+      <div class="retir-lbl">💸 Quanto ele quer retirar agora? Saldo disponível: ${fmtVal(saldoRest)}</div>
+      <input id="rinp-${p.id}" type="number" min="0.01" step="0.01" placeholder="Valor da retirada" onkeydown="if(event.key==='Enter')confirmarRetirada('${cid}','${p.id}',${saldoRest})" />
+      <button class="btn-retir" onclick="confirmarRetirada('${cid}','${p.id}',${saldoRest})">CONFIRMAR</button>
+      <button class="btn-cancel" onclick="toggleRetirada('${p.id}')">cancelar</button>
+    </div>` : '';
+
+  return `<div class="item ${p.status}">
+    <div class="item-top">
+      <div class="sdot"></div>
+      <div class="iinfo"><div class="inome">${p.nome}</div><div class="its">${ts}</div></div>
+      ${valorExib}
+    </div>
+    <div class="iact">${act}</div>
+    ${retirBox}
+  </div>`;
+}
+
+function fmtVal(v){return '$ '+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtTs(ts){if(!ts)return '';const d=new Date(ts);return d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+</script>
+</body>
+</html>
